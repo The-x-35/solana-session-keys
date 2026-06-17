@@ -51,20 +51,37 @@ export async function buildWalletTx(
   return tx;
 }
 
-/** Pull the human-readable program log out of a SendTransactionError. */
+const PROGRAM_HINT = /insufficient|exceed|limit|denied|unauthorized|expired|0x[0-9a-f]+/i;
+
+/**
+ * Wallet adapters wrap the real failure ("WalletSendTransactionError: Unexpected
+ * error") and hide the cause in a nested `.error`/`.cause`. Walk the chain to
+ * surface the actual program log or message instead of the opaque wrapper.
+ */
 export function describeTxError(err: unknown): string {
-  if (err && typeof err === "object") {
-    const anyErr = err as { message?: string; logs?: string[] };
-    const logs = anyErr.logs?.join(" ") ?? "";
-    const msg = anyErr.message ?? String(err);
-    // Surface the most useful bit: program error or the message.
-    if (/insufficient|exceed|limit|denied|unauthorized|expired/i.test(logs)) {
-      const hit = anyErr.logs?.find((l) =>
-        /insufficient|exceed|limit|denied|unauthorized|expired/i.test(l),
-      );
-      return hit ?? msg;
+  const seen = new Set<unknown>();
+  let cur: unknown = err;
+  let best = "";
+  while (cur && typeof cur === "object" && !seen.has(cur)) {
+    seen.add(cur);
+    const e = cur as { message?: string; logs?: string[]; error?: unknown; cause?: unknown };
+    const hit = e.logs?.find((l) => PROGRAM_HINT.test(l));
+    if (hit) return hit;
+    if (typeof e.message === "string" && e.message && e.message !== "Unexpected error") {
+      best = e.message;
     }
-    return msg;
+    cur = e.error ?? e.cause;
   }
-  return String(err);
+  if (!best) {
+    best =
+      err && typeof err === "object" && "message" in err
+        ? String((err as { message?: unknown }).message)
+        : String(err);
+  }
+  // If we only got the opaque wrapper, add a hint about the usual cause.
+  if (best === "Unexpected error") {
+    best =
+      "Unexpected error (wallet rejected/failed to send — common causes: RPC rate-limited or unreachable, or your wallet is not on Devnet)";
+  }
+  return best;
 }

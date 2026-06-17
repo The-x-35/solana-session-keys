@@ -7,6 +7,7 @@ import {
   LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
+  Transaction,
 } from "@solana/web3.js";
 import {
   Actions,
@@ -160,9 +161,18 @@ export default function SwigPage() {
       coSigners: Keypair[] = [],
     ) => {
       if (!publicKey) throw new Error("Wallet not connected");
-      const tx = await buildWalletTx(connection, instructions, publicKey, coSigners);
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash("finalized");
+      const tx = new Transaction().add(...instructions);
+      tx.feePayer = publicKey;
+      tx.recentBlockhash = blockhash;
+      if (coSigners.length > 0) tx.partialSign(...coSigners);
       const sig = await sendTransaction(tx, connection);
-      await connection.confirmTransaction(sig, "confirmed");
+      // Bounded confirm — won't hang past block height if the WS/RPC is flaky.
+      await connection.confirmTransaction(
+        { signature: sig, blockhash, lastValidBlockHeight },
+        "confirmed",
+      );
       return sig;
     },
     [connection, publicKey, sendTransaction],
