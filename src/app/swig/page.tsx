@@ -45,7 +45,7 @@ const swigIdFor = (owner: PublicKey) => owner.toBytes();
 
 export default function SwigPage() {
   const { connection } = useConnection();
-  const { publicKey, connected, sendTransaction } = useWallet();
+  const { publicKey, connected, signTransaction } = useWallet();
 
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const [busy, setBusy] = useState(false);
@@ -154,28 +154,36 @@ export default function SwigPage() {
     return Number(expirySlot) - currentSlot;
   }, [expirySlot, currentSlot]);
 
-  // Helper: send a wallet-signed (Phantom) transaction.
+  // Helper: Phantom only SIGNS; we submit through our own (Helius devnet)
+  // connection. This avoids the wallet adapter's sendTransaction path (and its
+  // cluster detection / opaque "Unexpected error"), guarantees the tx lands on
+  // devnet, and surfaces real preflight logs if it fails.
   const sendViaWallet = useCallback(
     async (
       instructions: Parameters<typeof buildWalletTx>[1],
       coSigners: Keypair[] = [],
     ) => {
-      if (!publicKey) throw new Error("Wallet not connected");
+      if (!publicKey || !signTransaction) {
+        throw new Error("Wallet not connected or cannot sign");
+      }
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash("finalized");
       const tx = new Transaction().add(...instructions);
       tx.feePayer = publicKey;
       tx.recentBlockhash = blockhash;
       if (coSigners.length > 0) tx.partialSign(...coSigners);
-      const sig = await sendTransaction(tx, connection);
-      // Bounded confirm — won't hang past block height if the WS/RPC is flaky.
+      const signed = await signTransaction(tx);
+      const sig = await connection.sendRawTransaction(signed.serialize(), {
+        skipPreflight: false,
+        preflightCommitment: "confirmed",
+      });
       await connection.confirmTransaction(
         { signature: sig, blockhash, lastValidBlockHeight },
         "confirmed",
       );
       return sig;
     },
-    [connection, publicKey, sendTransaction],
+    [connection, publicKey, signTransaction],
   );
 
   // ── Step 2: create the Swig smart wallet ─────────────────────────────────
