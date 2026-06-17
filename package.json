@@ -1,0 +1,42 @@
+{
+  "name": "solana-session-keys-poc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Devnet POC: scoped, time-limited Solana session keys via Swig and MagicBlock/Gum (no custom on-chain program).",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "verify:swig": "node scripts/verify-swig-devnet.mjs",
+    "verify:gum": "node scripts/verify-gum-devnet.mjs"
+  },
+  "dependencies": {
+    "@magicblock-labs/gum-react-sdk": "3.0.10",
+    "@magicblock-labs/gum-sdk": "3.0.10",
+    "@solana/wallet-adapter-base": "0.9.27",
+    "@solana/wallet-adapter-phantom": "0.9.28",
+    "@solana/wallet-adapter-react": "0.15.39",
+    "@solana/wallet-adapter-react-ui": "0.9.39",
+    "@solana/wallet-adapter-solflare": "0.6.32",
+    "@solana/web3.js": "1.98.4",
+    "@swig-wallet/classic": "2.1.0",
+    "bs58": "6.0.0",
+    "buffer": "6.0.3",
+    "next": "14.2.30",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.10",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "autoprefixer": "10.4.19",
+    "eslint": "8.57.0",
+    "eslint-config-next": "14.2.30",
+    "postcss": "8.4.39",
+    "tailwindcss": "3.4.6",
+    "typescript": "5.5.3"
+  }
+}

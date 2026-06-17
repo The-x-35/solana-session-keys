@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background: radial-gradient(1200px 600px at 50% -10%, #1b1b2b 0%, #0a0a0f 60%);
+  min-height: 100vh;
+  color: #e7e7ef;
+}
+
+/* Wallet-adapter button, themed to match the dark UI. */
+.wallet-adapter-button {
+  background-color: #6d54ff !important;
+  border-radius: 0.5rem !important;
+  height: 2.5rem !important;
+  font-size: 0.875rem !important;
+}
+.wallet-adapter-button:not([disabled]):hover {
+  background-color: #5a42e6 !important;
+}
