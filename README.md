@@ -14,6 +14,21 @@ Solana, two ways, side by side:
 > See [`RESEARCH.md`](./RESEARCH.md) for the Phase-0 findings (verified package
 > versions, exact APIs, program IDs, and what each approach can/can't prove).
 
+## Helper API for the Avici app (`/api/swig/*`)
+
+Beyond the two browser demos, this repo exposes **HTTP helper routes** so the
+Avici Flutter app can use Swig session keys without running the SDK natively. The
+server only **builds unsigned transactions** and reads chain state — it holds no
+keys. The app signs on-device (owner key for setup, ephemeral session key for
+spends) and submits. Bearer-authed via `SESSION_HELPER_BEARER`.
+
+See [`API.md`](./API.md) for the full contract. Verify end-to-end against devnet:
+
+```bash
+npm run dev          # terminal 1
+npm run verify:api   # terminal 2 (uses ~/.config/solana/id.json as the device key)
+```
+
 ## The consent model
 
 A user connects their wallet and **explicitly authorizes a session** scoped to an

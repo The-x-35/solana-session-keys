@@ -10,11 +10,14 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "verify:swig": "node scripts/verify-swig-devnet.mjs",
-    "verify:gum": "node scripts/verify-gum-devnet.mjs"
+    "verify:gum": "node scripts/verify-gum-devnet.mjs",
+    "verify:api": "node scripts/verify-api.mjs",
+    "verify:api:spl": "node scripts/verify-api-spl.mjs"
   },
   "dependencies": {
     "@magicblock-labs/gum-react-sdk": "3.0.10",
     "@magicblock-labs/gum-sdk": "3.0.10",
+    "@solana/spl-token": "^0.4.9",
     "@solana/wallet-adapter-base": "0.9.27",
     "@solana/wallet-adapter-phantom": "0.9.28",
     "@solana/wallet-adapter-react": "0.15.39",
